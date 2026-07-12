@@ -22,3 +22,9 @@ Open **Dagaar Branding Settings** on each site to set its company name, company 
 - About dialog uses the DagaarSoft logo and Dagaar Technologies attribution.
 - Marley Health desktop label changes to Healthcare.
 - Internal Python package names remain unchanged for update safety.
+
+## Version 1.2.0
+- Replaces every visible ERPNext label with DagaarSoft.
+- Replaces every visible Frappe label with Framework.
+- Rebrands ERPNext cards in the user app switcher to a D icon.
+- Hides framework/app version and branch details in the About dialog.

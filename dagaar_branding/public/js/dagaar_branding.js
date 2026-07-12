@@ -21,32 +21,26 @@
   const isFrappeExternalUrl = (url) => {
     if (!url) return false;
     try {
-      const parsed = new URL(url, window.location.origin);
-      const host = parsed.hostname.toLowerCase();
-      return [
-        "frappe.io",
-        "www.frappe.io",
-        "erpnext.com",
-        "www.erpnext.com",
-        "discuss.frappe.io",
-        "github.com"
-      ].some((domain) => host === domain || host.endsWith(`.${domain}`));
+      const host = new URL(url, window.location.origin).hostname.toLowerCase();
+      return ["frappe.io", "erpnext.com", "discuss.frappe.io", "github.com"].some(
+        (domain) => host === domain || host.endsWith(`.${domain}`)
+      );
     } catch (_) {
       return false;
     }
   };
 
-  const replaceGeneralText = (text) => {
+  const replaceVisibleText = (text) => {
     if (!text) return text;
     return text
       .replace(/Open Source applications for the web\.?/gi, "DagaarSoft Web Applications.")
-      .replace(/Framework Technologies Pvt\. Ltd\. and contributors/gi, "Dagaar Technologies Pvt. Ltd. and contributors")
-      .replace(/Frappe Technologies Pvt\. Ltd\. and contributors/gi, "Dagaar Technologies Pvt. Ltd. and contributors")
-      .replace(/\bERPNext Settings\b/g, "DagaarSoft Settings")
-      .replace(/\bAbout ERPNext\b/g, "About DagaarSoft")
-      .replace(/\bPowered by ERPNext\b/g, "Powered by DagaarSoft")
-      .replace(/\bFrappe Framework\b/g, "Framework")
-      .replace(/\bFrappe Support\b/g, "Framework Support")
+      .replace(/(?:Frappe|Framework) Technologies Pvt\. Ltd\. and contributors/gi, "Dagaar Technologies Pvt. Ltd. and contributors")
+      .replace(/\bERPNext Settings\b/gi, "DagaarSoft Settings")
+      .replace(/\bAbout ERPNext\b/gi, "About DagaarSoft")
+      .replace(/\bPowered by ERPNext\b/gi, "Powered by DagaarSoft")
+      .replace(/\bERPNext\b/g, "DagaarSoft")
+      .replace(/\bFrappe Framework\b/gi, "Framework")
+      .replace(/\bFrappe Support\b/gi, "Framework Support")
       .replace(/\bFrappe\b/g, "Framework");
   };
 
@@ -56,6 +50,34 @@
     img.dataset.dagaarBrandSrc = src;
     img.style.objectFit = "contain";
     img.style.borderRadius = "0";
+  }
+
+  function replaceTextNodes(root) {
+    const base = root.body || root;
+    if (!base) return;
+    const walker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const parent = node.parentElement;
+        if (!parent || ["SCRIPT", "STYLE", "CODE", "PRE", "TEXTAREA", "INPUT"].includes(parent.tagName)) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return /ERPNext|Frappe|Open Source applications for the web|Technologies Pvt\. Ltd\. and contributors/i.test(node.nodeValue || "")
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_REJECT;
+      }
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach((node) => {
+      node.nodeValue = replaceVisibleText(node.nodeValue);
+    });
+
+    base.querySelectorAll?.("[title], [aria-label], [placeholder], img[alt]").forEach((el) => {
+      ["title", "aria-label", "placeholder", "alt"].forEach((attr) => {
+        const value = el.getAttribute(attr);
+        if (value) el.setAttribute(attr, replaceVisibleText(value));
+      });
+    });
   }
 
   function rewriteExternalLinks(root) {
@@ -70,32 +92,10 @@
     });
   }
 
-  function updateGeneralText(root) {
-    const base = root.body || root;
-    if (!base) return;
-    const walker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT, {
-      acceptNode(node) {
-        const parent = node.parentElement;
-        if (!parent || ["SCRIPT", "STYLE", "CODE", "PRE", "TEXTAREA", "INPUT"].includes(parent.tagName)) {
-          return NodeFilter.FILTER_REJECT;
-        }
-        return /Frappe|Open Source applications for the web|Framework Technologies Pvt\. Ltd|Frappe Technologies Pvt\. Ltd/.test(node.nodeValue || "")
-          ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_REJECT;
-      }
-    });
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach((node) => {
-      node.nodeValue = replaceGeneralText(node.nodeValue);
-    });
-
-    base.querySelectorAll?.("[title], [aria-label], [placeholder], img[alt]").forEach((el) => {
-      ["title", "aria-label", "placeholder", "alt"].forEach((attr) => {
-        const value = el.getAttribute(attr);
-        if (value) el.setAttribute(attr, replaceGeneralText(value));
-      });
-    });
+  function hideTechnicalLine(el) {
+    if (!el) return;
+    el.classList.add("dagaar-hide-technical-version");
+    el.setAttribute("aria-hidden", "true");
   }
 
   function updateAboutDialog(root) {
@@ -104,24 +104,47 @@
 
     base.querySelectorAll(".modal, .about-dialog, [role='dialog']").forEach((dialog) => {
       const text = dialog.textContent || "";
-      if (!/Framework Version|Installed Apps|Open Source applications|Frappe/i.test(text)) return;
+      if (!/Framework Version|Installed Apps|DagaarSoft Web Applications|Open Source applications|ERPNext|Frappe/i.test(text)) return;
       dialog.classList.add("dagaar-about-dialog");
 
       dialog.querySelectorAll("h1, h2, h3, h4, .modal-title, .about-app-name").forEach((el) => {
         if (/^\s*(Frappe|Framework)\s*$/i.test(el.textContent || "")) el.textContent = "DagaarSoft";
       });
 
-      const descriptionCandidates = dialog.querySelectorAll("p, .about-description, .text-muted");
-      descriptionCandidates.forEach((el) => {
+      dialog.querySelectorAll("p, .about-description, .text-muted").forEach((el) => {
         if (/Open Source applications for the web/i.test(el.textContent || "")) {
           el.textContent = "DagaarSoft Web Applications.";
         }
       });
 
-      dialog.querySelectorAll("img").forEach((img) => {
-        const context = `${img.alt || ""} ${img.title || ""} ${img.closest("div")?.textContent || ""}`;
-        if (/DagaarSoft|Frappe|Framework/i.test(context)) setImage(img, settings.product_logo);
+      // Hide framework and installed-app technical version/branch lines.
+      dialog.querySelectorAll("*").forEach((el) => {
+        if (el.children.length) return;
+        const value = (el.textContent || "").trim();
+        if (/^(?:frappe|framework|erpnext|dagaarsoft|solvronix_desk|healthcare|dagaar_branding)\s*:\s*\d/i.test(value)) {
+          hideTechnicalLine(el);
+        } else if (/^\d+(?:\.\d+)+(?:\s*\([^)]*\))?$/.test(value)) {
+          hideTechnicalLine(el);
+        }
       });
+
+      // Product row: DagaarSoft name, D icon, no internal package/version details.
+      dialog.querySelectorAll(".installed-app, .app-item, .app-card, .about-app, .app-logo-and-title, .app-list-item, .row, li").forEach((card) => {
+        const cardText = card.textContent || "";
+        if (!/ERPNext|erpnext\s*:|DagaarSoft/i.test(cardText)) return;
+        card.querySelectorAll("*").forEach((el) => {
+          if (el.children.length) return;
+          const value = (el.textContent || "").trim();
+          if (/^ERPNext$/i.test(value)) el.textContent = "DagaarSoft";
+          if (/^erpnext\s*:/i.test(value)) hideTechnicalLine(el);
+        });
+        const img = card.querySelector("img");
+        if (img) setImage(img, settings.product_icon);
+      });
+
+      // Replace the main About logo only, not every installed-app icon.
+      const mainLogo = dialog.querySelector(".about-logo img, .about-app-logo img, .modal-body > div:first-child img, .modal-body img");
+      if (mainLogo) setImage(mainLogo, settings.product_logo);
 
       dialog.querySelectorAll("a[href]").forEach((a) => {
         a.href = settings.vendor_url;
@@ -131,29 +154,52 @@
     });
   }
 
-  function setCardLabel(card, oldPattern, newLabel) {
-    card.querySelectorAll(".widget-title, .module-name, .app-name, .sidebar-item-label, .standard-sidebar-label, .title-text, .ellipsis, span, div").forEach((el) => {
-      const value = (el.textContent || "").trim();
-      if (oldPattern.test(value) && el.children.length === 0) el.textContent = newLabel;
-    });
+  function findCardFromText(el) {
+    return el.closest(
+      ".installed-app, .app-item, .app-card, .about-app, .app-logo-and-title, .app-list-item, .dropdown-item, .sidebar-item, .workspace-sidebar-item, .widget, .shortcut-widget-box, .module-card, li, [role='menuitem']"
+    ) || el.parentElement;
   }
 
-  function updateInstalledApps(root) {
+  function brandProductCards(root) {
     const base = root.body || root;
     if (!base?.querySelectorAll) return;
-    base.querySelectorAll(".installed-app, .app-item, .app-card, .about-app, .app-logo-and-title, .app-list-item, .modal .row").forEach((card) => {
-      const text = (card.textContent || "").trim();
-      if (/\berpnext\b|^ERPNext$/i.test(text)) {
-        setCardLabel(card, /^ERPNext$/i, "DSoft");
-        const img = card.querySelector("img");
-        if (img) setImage(img, settings.product_icon);
-        card.querySelectorAll(".app-logo, .icon, [class*='avatar']").forEach((icon) => {
-          if (!icon.querySelector("img")) {
-            icon.textContent = "D";
-            icon.classList.add("dagaar-letter-icon");
-          }
-        });
-      }
+
+    base.querySelectorAll("*").forEach((el) => {
+      if (el.children.length) return;
+      const value = (el.textContent || "").trim();
+      if (!/^ERPNext$/i.test(value)) return;
+
+      el.textContent = "DagaarSoft";
+      const card = findCardFromText(el);
+      if (!card) return;
+      card.classList.add("dagaar-product-card");
+      const img = card.querySelector("img");
+      if (img) setImage(img, settings.product_icon);
+
+      card.querySelectorAll(".app-logo, .icon, [class*='avatar']").forEach((icon) => {
+        if (icon.tagName === "IMG" || icon.querySelector("img")) return;
+        const iconText = (icon.textContent || "").trim();
+        if (/^E$/i.test(iconText)) {
+          icon.textContent = "D";
+          icon.classList.add("dagaar-letter-icon");
+        }
+      });
+    });
+
+    // Handle app cards where the icon and title are separate siblings.
+    base.querySelectorAll(".app-item, .app-card, .installed-app, .dropdown-menu .row, .dropdown-menu li").forEach((card) => {
+      if (!/DagaarSoft|ERPNext/i.test(card.textContent || "")) return;
+      card.querySelectorAll("*").forEach((el) => {
+        if (!el.children.length && /^ERPNext$/i.test((el.textContent || "").trim())) el.textContent = "DagaarSoft";
+      });
+      const img = card.querySelector("img");
+      if (img) setImage(img, settings.product_icon);
+      card.querySelectorAll(".app-logo, .icon, [class*='avatar']").forEach((icon) => {
+        if (!icon.querySelector("img") && /^E$/i.test((icon.textContent || "").trim())) {
+          icon.textContent = "D";
+          icon.classList.add("dagaar-letter-icon");
+        }
+      });
     });
   }
 
@@ -163,20 +209,19 @@
     const selector = ".widget, .shortcut-widget-box, .link-item, .workspace-sidebar-item, .standard-sidebar-item, .desk-sidebar-item, .module-card, .app-card";
     base.querySelectorAll(selector).forEach((card) => {
       const label = (card.textContent || "").trim();
-
-      if (/ERPNext Settings|DagaarSoft Settings|^ERPNext$/i.test(label)) {
-        setCardLabel(card, /^ERPNext$/i, "DagaarSoft");
-        setCardLabel(card, /^ERPNext Settings$/i, "DagaarSoft Settings");
+      card.querySelectorAll("*").forEach((el) => {
+        if (el.children.length) return;
+        const value = (el.textContent || "").trim();
+        if (/^ERPNext$/i.test(value)) el.textContent = "DagaarSoft";
+        if (/^ERPNext Settings$/i.test(value)) el.textContent = "DagaarSoft Settings";
+        if (/^Marley Health$/i.test(value)) el.textContent = "Healthcare";
+        if (/^Frappe$/i.test(value)) el.textContent = "Framework";
+      });
+      if (/ERPNext|DagaarSoft Settings/i.test(label)) {
         const img = card.querySelector("img");
         if (img) setImage(img, settings.product_icon);
       }
-
-      if (/^Marley Health$/i.test(label)) {
-        setCardLabel(card, /^Marley Health$/i, "Healthcare");
-      }
-
       if (/^Frappe$/i.test(label)) {
-        setCardLabel(card, /^Frappe$/i, "Framework");
         const img = card.querySelector("img");
         if (img) setImage(img, settings.framework_icon);
       }
@@ -191,8 +236,7 @@
   }
 
   function updateHead() {
-    let current = replaceGeneralText(document.title || "");
-    current = current.replace(/\bERPNext\b/g, "DagaarSoft");
+    let current = replaceVisibleText(document.title || "");
     document.title = settings.company_name
       ? `${settings.company_name}${current && !current.includes(settings.company_name) ? ` - ${current}` : ""}`
       : current || "DagaarSoft";
@@ -219,9 +263,9 @@
 
   function apply(root = document) {
     updateHead();
-    updateGeneralText(root);
+    replaceTextNodes(root);
     updateAboutDialog(root);
-    updateInstalledApps(root);
+    brandProductCards(root);
     updateDesktopCards(root);
     updateLogos(root);
     rewriteExternalLinks(root);
@@ -263,13 +307,19 @@
       event.preventDefault();
       window.open(settings.vendor_url, "_blank", "noopener");
     }
+    setTimeout(scheduleApply, 0);
   }, true);
 
   async function start() {
     await loadSettings();
     apply(document);
     const observer = new MutationObserver(scheduleApply);
-    observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["href", "title", "aria-label"] });
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href", "title", "aria-label", "src"]
+    });
   }
 
   if (document.readyState === "loading") {

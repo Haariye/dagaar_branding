@@ -36,3 +36,13 @@
   font-weight: 800 !important;
   border-radius: 12px !important;
 }
+
+.dagaar-hide-technical-version {
+  display: none !important;
+}
+
+.dagaar-product-card img[data-dagaar-brand-src],
+.dagaar-about-dialog img[src*="dagaarsoft-d-icon"] {
+  object-fit: contain !important;
+  border-radius: 12px !important;
+}

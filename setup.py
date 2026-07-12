@@ -11,7 +11,7 @@ install_requires = [
 
 setup(
     name="dagaar_branding",
-    version="1.1.0",
+    version="1.2.0",
     description="Per-site company branding and DagaarSoft white-labeling for Frappe/ERPNext v16",
     author="Dagaar Technology",
     author_email="info@dagaar.com",
