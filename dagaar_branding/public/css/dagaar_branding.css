@@ -1,0 +1,38 @@
+.navbar-home img,
+.app-logo,
+.page-card-head img,
+.login-content img {
+  object-fit: contain !important;
+  border-radius: 0 !important;
+  max-height: 48px;
+}
+
+.page-card-head img,
+.login-content img {
+  max-width: 240px;
+  width: auto;
+}
+
+.dagaar-company-name {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.dagaar-about-dialog img[data-dagaar-brand-src*="dagaarsoft-logo"] {
+  max-width: 300px !important;
+  max-height: 72px !important;
+  width: auto !important;
+}
+
+.dagaar-letter-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  background: #0b86f3 !important;
+  color: #fff !important;
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  border-radius: 12px !important;
+}

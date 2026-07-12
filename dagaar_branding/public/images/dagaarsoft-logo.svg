@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 96" role="img" aria-label="DagaarSoft">
+  <rect width="96" height="96" rx="24" fill="#0b8ff0"/>
+  <path d="M24 24h27c18 0 29 10 29 24S69 72 51 72H24V24zm16 14v20h11c8 0 13-3 13-10s-5-10-13-10H40z" fill="#fff"/>
+  <text x="112" y="62" font-family="Arial,Helvetica,sans-serif" font-size="42" font-weight="700" fill="#172033">DagaarSoft</text>
+</svg>
