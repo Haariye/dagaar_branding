@@ -1,0 +1,89 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [
+  {
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "label": "Label",
+   "options": null,
+   "width": 250
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Currency",
+   "label": "Value",
+   "options": null,
+   "width": 150
+  }
+ ],
+ "disable_prepared_report_automation": 0,
+ "disabled": 1,
+ "doctype": "Report",
+ "filters": [
+  {
+   "default": null,
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "mandatory": 1,
+   "options": "Cost Center",
+   "wildcard_filter": 0
+  },
+  {
+   "default": null,
+   "fieldname": "account",
+   "fieldtype": "Select",
+   "label": "Payout",
+   "mandatory": 1,
+   "options": "RECEPTION DAILY CASH - HC\nPHARMA DAILY CASH - HC",
+   "wildcard_filter": 0
+  },
+  {
+   "default": "Today",
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date",
+   "mandatory": 0,
+   "options": null,
+   "wildcard_filter": 0
+  },
+  {
+   "default": "Today",
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date",
+   "mandatory": 0,
+   "options": null,
+   "wildcard_filter": 0
+  },
+  {
+   "default": null,
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode Of Payment",
+   "mandatory": 1,
+   "options": "Mode of Payment",
+   "wildcard_filter": 0
+  }
+ ],
+ "is_standard": "No",
+ "javascript": null,
+ "json": null,
+ "letter_head": "Head Letter",
+ "module": "Accounts",
+ "name": "End of Day",
+ "prepared_report": 0,
+ "query": "WITH summary AS (\r\n    SELECT\r\n        IFNULL(SUM(CASE WHEN si.status NOT IN ('Draft', 'Cancelled') THEN si.grand_total ELSE 0 END), 0) AS total_sales,\r\n        IFNULL(SUM(CASE WHEN si.paid_amount = 0 THEN si.grand_total ELSE 0 END), 0) AS credit_sales,\r\n        IFNULL(SUM(CASE WHEN si.paid_amount > 0 AND si.paid_amount < si.grand_total THEN (si.grand_total - si.paid_amount) ELSE 0 END), 0) AS partially_unpaid,\r\n        IFNULL(SUM(si.discount_amount), 0) AS total_discount,\r\n        IFNULL(SUM(CASE WHEN si.is_return = 1 THEN si.grand_total ELSE 0 END), 0) AS total_returns\r\n    FROM `tabSales Invoice` si\r\n    WHERE si.docstatus = 1\r\n      AND si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31')\r\n      AND si.cost_center = COALESCE(%(cost_center)s, si.cost_center)\r\n),\r\npayments AS (\r\n    SELECT IFNULL(SUM(paid_amount), 0) AS total_payments\r\n    FROM `tabPayment Entry`\r\n    WHERE docstatus = 1\r\n      AND payment_type = 'Receive'\r\n      AND posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31')\r\n      AND mode_of_payment = COALESCE(%(mode_of_payment)s, mode_of_payment)\r\n),\r\npayouts AS (\r\n    SELECT IFNULL(SUM(jea.debit - jea.credit), 0) AS total_payouts\r\n    FROM `tabJournal Entry` je\r\n    JOIN `tabJournal Entry Account` jea ON je.name = jea.parent\r\n    WHERE je.docstatus = 1\r\n      AND je.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31')\r\n      AND jea.account = COALESCE(%(account)s, jea.account)\r\n)\r\n\r\nSELECT * FROM (\r\n    SELECT '<div style=\"text-align: left; font-size: 16px;\">Total Sales</div>' AS Label,\r\n           CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT(summary.total_sales, 2), '</div>') AS Value\r\n    FROM summary, payments, payouts\r\n\r\n    UNION ALL\r\n\r\n    SELECT '<div style=\"text-align: left; font-size: 16px;\">Total Payments</div>',\r\n           CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT(payments.total_payments, 2), '</div>')\r\n    FROM summary, payments, payouts\r\n\r\n    UNION ALL\r\n\r\n    SELECT '<div style=\"text-align: left; font-size: 16px;\"><b>Total Activity</b></div>',\r\n           CONCAT('<div style=\"text-align: right; font-size: 16px;\"><b>$ ', FORMAT(summary.total_sales + payments.total_payments, 2), '</b></div>')\r\n    FROM summary, payments, payouts\r\n\r\n    UNION ALL\r\n\r\n    SELECT '<div style=\"text-align: left; font-size: 16px;\">Credit Sales</div>',\r\n           CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT(summary.credit_sales, 2), '</div>')\r\n    FROM summary, payments, payouts\r\n\r\n    UNION ALL\r\n\r\n    SELECT '<div style=\"text-align: left; font-size: 16px;\">Partially Unpaid Amount</div>',\r\n           CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT(summary.partially_unpaid, 2), '</div>')\r\n    FROM summary, payments, payouts\r\n\r\n    UNION ALL\r\n\r\n    SELECT '<div style=\"text-align: left; font-size: 16px;\">Payouts</div>',\r\n           CONCAT('<div style=\"text-align: right; font-size: 16px; color:red;\">$ ', FORMAT(payouts.total_payouts, 2), '</div>')\r\n    FROM summary, payments, payouts\r\n\r\n    UNION ALL\r\n\r\n    SELECT '<div style=\"text-align: left; font-size: 16px;\"><b>Available For Deposit</b></div>',\r\n           CONCAT('<div style=\"text-align: right; font-size: 16px;\"><b>$ ', FORMAT(summary.total_sales + payments.total_payments - summary.credit_sales - summary.partially_unpaid + payouts.total_payouts, 2), '</b></div>')\r\n    FROM summary, payments, payouts\r\n\r\n    UNION ALL\r\n\r\n    SELECT '<div style=\"text-align: left; font-size: 16px;\">Discount Amount</div>',\r\n           CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT(summary.total_discount, 2), '</div>')\r\n    FROM summary, payments, payouts\r\n\r\n    UNION ALL\r\n\r\n    SELECT '<div style=\"text-align: left; font-size: 16px;\">Total Returns</div>',\r\n           CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT(summary.total_returns, 2), '</div>')\r\n    FROM summary, payments, payouts\r\n\r\n    -- ✅ ITEM GROUP SECTION (FIXED)\r\n    UNION ALL\r\n\r\n    SELECT '<div style=\"text-align: left; font-size: 16px; margin-top:00px;\"><b>Item Group Summary</b></div>',\r\n           '<div></div>'\r\n\r\n    UNION ALL\r\n\r\n    SELECT \r\n        CONCAT('<div style=\"padding-left:10px;\">', sii.item_group, '</div>') AS Label,\r\n        CONCAT('<div style=\"text-align: right;\">$ ', FORMAT(SUM(sii.base_net_amount), 2), '</div>') AS Value\r\n    FROM `tabSales Invoice` si\r\n    JOIN `tabSales Invoice Item` sii ON sii.parent = si.name\r\n    WHERE si.docstatus = 1\r\n      AND si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31')\r\n    GROUP BY sii.item_group\r\n\r\n) AS report;",
+ "ref_doctype": "Account",
+ "reference_report": null,
+ "report_name": "End of Day",
+ "report_script": null,
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "Auditor"
+  }
+ ],
+ "timeout": 0
+}

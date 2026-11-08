@@ -1,0 +1,86 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [
+  {
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "label": "Label",
+   "options": null,
+   "width": 300
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Data",
+   "label": "Value",
+   "options": null,
+   "width": 150
+  }
+ ],
+ "disable_prepared_report_automation": 0,
+ "disabled": 0,
+ "doctype": "Report",
+ "filters": [
+  {
+   "default": "Today",
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date",
+   "mandatory": 0,
+   "options": null,
+   "wildcard_filter": 0
+  },
+  {
+   "default": "Today",
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date",
+   "mandatory": 0,
+   "options": null,
+   "wildcard_filter": 0
+  },
+  {
+   "default": null,
+   "fieldname": "territory",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "mandatory": 1,
+   "options": "Territory",
+   "wildcard_filter": 0
+  },
+  {
+   "default": null,
+   "fieldname": "account",
+   "fieldtype": "Select",
+   "label": "Payout",
+   "mandatory": 1,
+   "options": "BR1 Daily Cash - HGT\nBR2 Daily Cash - HGT",
+   "wildcard_filter": 0
+  }
+ ],
+ "is_standard": "No",
+ "javascript": null,
+ "json": null,
+ "letter_head": "Head Letter",
+ "module": "Accounts",
+ "name": "End of Day Procedure",
+ "prepared_report": 0,
+ "query": "SELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\">Total Sales</div>' AS Label,\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT((SELECT IFNULL(SUM(grand_total), 0)\r\n     FROM `tabSales Invoice` AS si\r\n     WHERE si.docstatus = 1\r\n       AND si.status NOT IN ('Draft', 'Cancelled')\r\n       AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n       AND (si.territory = COALESCE(%(territory)s, si.territory))\r\n    ), 2), '</div>') AS `Value`\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\">Total Payments</div>',\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT((SELECT IFNULL(SUM(paid_amount), 0)\r\n     FROM `tabPayment Entry` AS pe\r\n     WHERE pe.docstatus = 1\r\n       AND pe.payment_type = 'Receive'\r\n       AND (pe.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n       AND (pe.party IN (SELECT name FROM `tabCustomer` WHERE territory = COALESCE(%(territory)s, territory)))), 2), '</div>')\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\"><b>Total Activity</b></div>',\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px;\"><b>$ ', FORMAT((\r\n        (SELECT IFNULL(SUM(grand_total), 0)\r\n         FROM `tabSales Invoice` AS si\r\n         WHERE si.docstatus = 1\r\n           AND si.status NOT IN ('Draft', 'Cancelled')\r\n           AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n           AND (si.territory = COALESCE(%(territory)s, si.territory))\r\n        ) +\r\n        (SELECT IFNULL(SUM(paid_amount), 0)\r\n         FROM `tabPayment Entry` AS pe\r\n         WHERE pe.docstatus = 1\r\n           AND pe.payment_type = 'Receive'\r\n           AND (pe.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n           AND (pe.party IN (SELECT name FROM `tabCustomer` WHERE territory = COALESCE(%(territory)s, territory)))\r\n        )\r\n    ), 2), '</b></div>')\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\">Credit Sales</div>',\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT((SELECT IFNULL(SUM(grand_total), 0)\r\n     FROM `tabSales Invoice` AS si\r\n     WHERE si.docstatus = 1\r\n       AND si.status NOT IN ('Draft', 'Cancelled')\r\n       AND si.paid_amount = 0\r\n       AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n       AND (si.territory = COALESCE(%(territory)s, si.territory))), 2), '</div>')\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\">Partially Unpaid Amount</div>',\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT((SELECT IFNULL(SUM(grand_total - paid_amount), 0)\r\n     FROM `tabSales Invoice` AS si\r\n     WHERE si.docstatus = 1\r\n       AND si.status NOT IN ('Draft', 'Cancelled')\r\n       AND si.paid_amount > 0\r\n       AND si.paid_amount < si.grand_total\r\n       AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n       AND (si.territory = COALESCE(%(territory)s, si.territory))), 2), '</div>')\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\">Payouts</div>',\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px; color: red;\">$ ', FORMAT((SELECT IFNULL(SUM(jea.debit - jea.credit), 0)\r\n     FROM `tabJournal Entry` AS je\r\n     JOIN `tabJournal Entry Account` AS jea ON je.name = jea.parent\r\n     WHERE je.docstatus = 1\r\n       AND (je.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n       AND jea.account = COALESCE(%(account)s, jea.account)), 2), '</div>')\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\"><b>Available For Deposit</b></div>',\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px;\"><b>$ ', FORMAT((\r\n        (\r\n            (SELECT IFNULL(SUM(grand_total), 0)\r\n             FROM `tabSales Invoice` AS si\r\n             WHERE si.docstatus = 1\r\n               AND si.status NOT IN ('Draft', 'Cancelled')\r\n               AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n               AND (si.territory = COALESCE(%(territory)s, si.territory))\r\n            ) +\r\n            (SELECT IFNULL(SUM(paid_amount), 0)\r\n             FROM `tabPayment Entry` AS pe\r\n             WHERE pe.docstatus = 1\r\n               AND pe.payment_type = 'Receive'\r\n               AND (pe.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n               AND (pe.party IN (SELECT name FROM `tabCustomer` WHERE territory = COALESCE(%(territory)s, territory)))\r\n            )\r\n        ) -\r\n        (SELECT IFNULL(SUM(grand_total), 0)\r\n         FROM `tabSales Invoice` AS si\r\n         WHERE si.docstatus = 1\r\n           AND si.status NOT IN ('Draft', 'Cancelled')\r\n           AND si.paid_amount = 0\r\n           AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n           AND (si.territory = COALESCE(%(territory)s, si.territory))\r\n        ) -\r\n        (SELECT IFNULL(SUM(grand_total - paid_amount), 0)\r\n         FROM `tabSales Invoice` AS si\r\n         WHERE si.docstatus = 1\r\n           AND si.status NOT IN ('Draft', 'Cancelled')\r\n           AND si.paid_amount > 0\r\n           AND si.paid_amount < si.grand_total\r\n           AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n           AND (si.territory = COALESCE(%(territory)s, si.territory))\r\n        ) +\r\n        (SELECT IFNULL(SUM(jea.debit - jea.credit), 0)\r\n         FROM `tabJournal Entry` AS je\r\n         JOIN `tabJournal Entry Account` AS jea ON je.name = jea.parent\r\n         WHERE je.docstatus = 1\r\n           AND (je.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n           AND jea.account = COALESCE(%(account)s, jea.account))\r\n    ), 2), '</b></div>')\r\n-- Section separator before Credit Sales Listing\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\"></div>',\r\n    '<div style=\"text-align: right; font-size: 16px;\"></div>'\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 18px; font-weight: bold; color: #2c3e50; padding-top: 0px;\">Credit Sales Listing</div>',\r\n    '<div style=\"text-align: right; font-size: 16px;\"></div>'\r\n-- Credit Sales Listing - Customer-wise breakdown\r\nUNION ALL\r\nSELECT \r\n    CONCAT('<div style=\"text-align: left; font-size: 14px; padding-left: 10px;\">', customer_name, '</div>'),\r\n    CONCAT('<div style=\"text-align: right; font-size: 14px;\">$ ', FORMAT(total_credit_sales, 2), '</div>')\r\nFROM (\r\n    SELECT \r\n        si.customer_name,\r\n        SUM(si.grand_total) as total_credit_sales\r\n    FROM `tabSales Invoice` AS si\r\n    WHERE si.docstatus = 1\r\n      AND si.status NOT IN ('Draft', 'Cancelled')\r\n      AND si.paid_amount = 0\r\n      AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n      AND (si.territory = COALESCE(%(territory)s, si.territory))\r\n    GROUP BY si.customer_name\r\n    ORDER BY total_credit_sales DESC\r\n) AS credit_sales\r\n-- Section separator after Credit Sales Listing\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\"></div>',\r\n    '<div style=\"text-align: right; font-size: 16px;\"></div>'\r\n-- Payments Collected Section\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 18px; font-weight: bold; color: #2c3e50; padding-top: 0px;\">Payments Collected</div>',\r\n    '<div style=\"text-align: right; font-size: 16px;\"></div>'\r\nUNION ALL\r\nSELECT \r\n    CONCAT('<div style=\"text-align: left; font-size: 14px; padding-left: 10px;\">', t.party_name, '</div>'),\r\n    CONCAT('<div style=\"text-align: right; font-size: 14px;\">$ ', FORMAT(t.total_paid, 2), '</div>')\r\nFROM (\r\n    SELECT \r\n        pe.party_name,\r\n        SUM(pe.paid_amount) AS total_paid\r\n    FROM `tabPayment Entry` AS pe\r\n    WHERE pe.docstatus = 1\r\n      AND pe.payment_type = 'Receive'\r\n      AND (pe.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n      AND (pe.party IN (SELECT name FROM `tabCustomer` WHERE territory = COALESCE(%(territory)s, territory)))\r\n    GROUP BY pe.party_name\r\n    ORDER BY total_paid DESC\r\n) AS t\r\n-- Section separator after Payments Collected\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\"></div>',\r\n    '<div style=\"text-align: right; font-size: 16px;\"></div>'\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\">Discount Amount</div>',\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT((SELECT IFNULL(SUM(discount_amount), 0)\r\n     FROM `tabSales Invoice` AS si\r\n     WHERE si.docstatus = 1\r\n       AND si.status NOT IN ('Draft', 'Cancelled')\r\n       AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n       AND (si.territory = COALESCE(%(territory)s, si.territory))), 2), '</div>')\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\">Total Returns</div>',\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px; color: ', IF((SELECT IFNULL(SUM(grand_total), 0)\r\n     FROM `tabSales Invoice` AS si\r\n     WHERE si.docstatus = 1\r\n       AND si.is_return = 1\r\n       AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n       AND (si.territory = COALESCE(%(territory)s, si.territory))) < 0, 'red', 'black'), ';\">$ ', FORMAT((SELECT IFNULL(SUM(grand_total), 0)\r\n     FROM `tabSales Invoice` AS si\r\n     WHERE si.docstatus = 1\r\n       AND si.is_return = 1\r\n       AND (si.posting_date BETWEEN COALESCE(%(from_date)s, '1000-01-01') AND COALESCE(%(to_date)s, '9999-12-31'))\r\n       AND (si.territory = COALESCE(%(territory)s, si.territory))), 2), '</div>')\r\n-- Add the new rows here\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\">Oversold Total</div>',\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT((\r\n        SELECT \r\n            ROUND(SUM(CASE WHEN (item.price_list_rate - item.rate) < 0 THEN (item.price_list_rate - item.rate) * item.qty ELSE 0 END), 2)\r\n        FROM \r\n            `tabSales Invoice Item` AS item\r\n        INNER JOIN \r\n            `tabSales Invoice` AS invoice \r\n        ON \r\n            item.parent = invoice.name\r\n        WHERE \r\n            invoice.docstatus = 1\r\n            AND invoice.posting_date BETWEEN %(from_date)s AND %(to_date)s\r\n            AND invoice.territory = %(territory)s\r\n    ), 2), '</div>')\r\nUNION ALL\r\nSELECT \r\n    '<div style=\"text-align: left; font-size: 16px;\">Under Sold</div>',\r\n    CONCAT('<div style=\"text-align: right; font-size: 16px;\">$ ', FORMAT((\r\n        SELECT \r\n            ROUND(SUM(CASE WHEN (item.price_list_rate - item.rate) > 0 THEN (item.price_list_rate - item.rate) * item.qty ELSE 0 END), 2)\r\n        FROM \r\n            `tabSales Invoice Item` AS item\r\n        INNER JOIN \r\n            `tabSales Invoice` AS invoice \r\n        ON \r\n            item.parent = invoice.name\r\n        WHERE \r\n            invoice.docstatus = 1\r\n            AND invoice.posting_date BETWEEN %(from_date)s AND %(to_date)s\r\n            AND invoice.territory = %(territory)s\r\n    ), 2), '</div>');\r\n",
+ "ref_doctype": "Account",
+ "reference_report": null,
+ "report_name": "End of Day Procedure",
+ "report_script": null,
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "Auditor"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ],
+ "timeout": 0
+}

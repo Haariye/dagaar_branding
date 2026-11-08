@@ -272,12 +272,55 @@
     addCompanyName();
   }
 
-  function scheduleApply() {
+  let brandingObserver = null;
+  const observerOptions = {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["href", "title", "aria-label", "src"]
+  };
+  const pendingRoots = new Set();
+
+  function scheduleApply(root) {
+    if (root && root !== document) {
+      const element = root.nodeType === 3 ? root.parentElement : root;
+      if (element?.isConnected) {
+        pendingRoots.add(element.parentElement || element);
+      }
+    }
     if (scheduled) return;
     scheduled = true;
+
     requestAnimationFrame(() => {
       scheduled = false;
-      apply(document);
+      const roots = [...pendingRoots];
+      pendingRoots.clear();
+      if (!roots.length) return;
+
+      brandingObserver?.disconnect();
+      try {
+        const selected = roots.filter(
+          (root) => !roots.some(
+            (other) => other !== root && other.contains(root)
+          )
+        );
+
+        for (const root of selected) {
+          if (!root.isConnected) continue;
+          const text = root.textContent || "";
+          const relevant =
+            /ERPNext|Frappe|Framework Version|Installed Apps|Open Source applications/i.test(text) ||
+            root.matches?.(".navbar-home, .page-card-head, .modal, .about-dialog, [role='dialog']") ||
+            root.querySelector?.(".navbar-home img, .page-card-head img, .about-logo img, .app-card, .installed-app") ||
+            root.matches?.("a[href], img") ||
+            root.querySelector?.("a[href*='frappe.io'], a[href*='erpnext.com']");
+
+          if (relevant) apply(root);
+        }
+      } finally {
+        brandingObserver?.observe(document.documentElement, observerOptions);
+      }
     });
   }
 
@@ -307,19 +350,34 @@
       event.preventDefault();
       window.open(settings.vendor_url, "_blank", "noopener");
     }
-    setTimeout(scheduleApply, 0);
+    // DOM changes are handled by the scoped observer.
   }, true);
+
+  // Menu items like "Framework Support" on the desktop avatar menu call
+  // window.open() directly (no <a href>), so redirect those as well.
+  const nativeWindowOpen = window.open.bind(window);
+  window.open = function (url, target, features) {
+    if (isFrappeExternalUrl(url ? String(url) : "")) {
+      return nativeWindowOpen(settings.vendor_url, target || "_blank", "noopener");
+    }
+    return nativeWindowOpen(url, target, features);
+  };
 
   async function start() {
     await loadSettings();
     apply(document);
-    const observer = new MutationObserver(scheduleApply);
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["href", "title", "aria-label", "src"]
+    brandingObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === "childList") {
+          for (const node of mutation.addedNodes) {
+            scheduleApply(node);
+          }
+        } else {
+          scheduleApply(mutation.target);
+        }
+      }
     });
+    brandingObserver.observe(document.documentElement, observerOptions);
   }
 
   if (document.readyState === "loading") {

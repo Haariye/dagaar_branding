@@ -1,0 +1,20 @@
+{
+ "app": null,
+ "bg_color": "blue",
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon": "concierge-bell",
+ "icon_image": "/assets/dagaar_branding/images/desktop/reception.svg",
+ "icon_type": "Link",
+ "label": "Reception",
+ "link": null,
+ "link_to": "Reception",
+ "link_type": "Workspace Sidebar",
+ "logo_url": null,
+ "name": "Reception",
+ "parent_icon": null,
+ "restrict_removal": 0,
+ "roles": [],
+ "sidebar": null,
+ "standard": 0
+}

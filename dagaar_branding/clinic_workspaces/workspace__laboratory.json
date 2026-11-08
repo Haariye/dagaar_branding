@@ -1,0 +1,261 @@
+{
+ "app": null,
+ "charts": [],
+ "content": "[{\"id\":\"f1f8e3812a\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Patients\",\"col\":3}},{\"id\":\"326087361e\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Patients Admitted\",\"col\":3}},{\"id\":\"264b39da0e\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Open Appointments\",\"col\":3}},{\"id\":\"e507c90d85\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Appointments to Bill\",\"col\":3}},{\"id\":\"vp_PgC6VCT\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Patient Laboratory Queue\",\"col\":12}},{\"id\":\"fKaNGh_f3X\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"LCsKfCbHFS\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h3\\\"><b>Outpatients Module</b></span><br>\",\"col\":12}},{\"id\":\"gtytowgpr9\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Lab Test\",\"col\":4}},{\"id\":\"pw8ECGStt-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Lab Test Template\",\"col\":4}},{\"id\":\"ORyvkFjcEo\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Patient List\",\"col\":4}},{\"id\":\"r8KmBRp9gk\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Vital Signs\",\"col\":4}},{\"id\":\"E4_fSDOgVI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Lab Test UOM\",\"col\":4}},{\"id\":\"cgh4dqonE3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Lab Test Sample\",\"col\":4}},{\"id\":\"QAyRuJGfxG\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"-K7NMpJiTM\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Reports &amp; Masters</span>\",\"col\":12}}]",
+ "custom_blocks": [
+  {
+   "custom_block_name": "Patient Laboratory Queue",
+   "label": "Patient Laboratory Queue"
+  }
+ ],
+ "doctype": "Workspace",
+ "external_link": null,
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "non-profit",
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Laboratory",
+ "link_to": null,
+ "link_type": null,
+ "links": [
+  {
+   "dependencies": "",
+   "description": null,
+   "hidden": 0,
+   "icon": null,
+   "is_query_report": 0,
+   "label": "Patient",
+   "link_count": 0,
+   "link_to": "Patient",
+   "link_type": "DocType",
+   "onboard": 1,
+   "only_for": null,
+   "report_ref_doctype": null,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": null,
+   "hidden": 0,
+   "icon": null,
+   "is_query_report": 0,
+   "label": "Healthcare Practitioner",
+   "link_count": 0,
+   "link_to": "Healthcare Practitioner",
+   "link_type": "DocType",
+   "onboard": 1,
+   "only_for": null,
+   "report_ref_doctype": null,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": null,
+   "hidden": 0,
+   "icon": null,
+   "is_query_report": 0,
+   "label": "Practitioner Schedule",
+   "link_count": 0,
+   "link_to": "Practitioner Schedule",
+   "link_type": "DocType",
+   "onboard": 1,
+   "only_for": null,
+   "report_ref_doctype": null,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": null,
+   "hidden": 0,
+   "icon": null,
+   "is_query_report": 0,
+   "label": "Medical Department",
+   "link_count": 0,
+   "link_to": "Medical Department",
+   "link_type": "DocType",
+   "onboard": 0,
+   "only_for": null,
+   "report_ref_doctype": null,
+   "type": "Link"
+  },
+  {
+   "dependencies": null,
+   "description": null,
+   "hidden": 0,
+   "icon": null,
+   "is_query_report": 0,
+   "label": "Patient Care Type",
+   "link_count": 0,
+   "link_to": "Patient Care Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "only_for": null,
+   "report_ref_doctype": null,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": null,
+   "hidden": 0,
+   "icon": null,
+   "is_query_report": 0,
+   "label": "Diagnosis",
+   "link_count": 0,
+   "link_to": "Diagnosis",
+   "link_type": "DocType",
+   "onboard": 0,
+   "only_for": null,
+   "report_ref_doctype": null,
+   "type": "Link"
+  },
+  {
+   "dependencies": null,
+   "description": null,
+   "hidden": 0,
+   "icon": null,
+   "is_query_report": 0,
+   "label": "Code Value",
+   "link_count": 0,
+   "link_to": "Code Value",
+   "link_type": "DocType",
+   "onboard": 0,
+   "only_for": null,
+   "report_ref_doctype": null,
+   "type": "Link"
+  },
+  {
+   "dependencies": null,
+   "description": null,
+   "hidden": 0,
+   "icon": null,
+   "is_query_report": 0,
+   "label": "Code System",
+   "link_count": 0,
+   "link_to": "Code System",
+   "link_type": "DocType",
+   "onboard": 0,
+   "only_for": null,
+   "report_ref_doctype": null,
+   "type": "Link"
+  }
+ ],
+ "module": "",
+ "name": "Laboratory",
+ "number_cards": [
+  {
+   "label": "Total Patients",
+   "number_card_name": "Total Patients"
+  },
+  {
+   "label": "Total Patients Admitted",
+   "number_card_name": "Total Patients Admitted"
+  },
+  {
+   "label": "Open Appointments",
+   "number_card_name": "Open Appointments"
+  },
+  {
+   "label": "Appointments to Bill",
+   "number_card_name": "Appointments to Bill"
+  }
+ ],
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "Healthcare",
+ "roles": [
+  {
+   "role": "Laboratory"
+  }
+ ],
+ "sequence_id": 10.1,
+ "shortcuts": [
+  {
+   "color": "Red",
+   "doc_view": "List",
+   "format": "{} Open",
+   "icon": null,
+   "kanban_board": null,
+   "label": "Lab Test",
+   "link_to": "Lab Test",
+   "report_ref_doctype": null,
+   "restrict_to_domain": null,
+   "stats_filter": "[[\"Lab Test\",\"result_date\",\"Timespan\",\"today\",false]]",
+   "type": "DocType",
+   "url": null
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "format": "{} Vacant",
+   "icon": null,
+   "kanban_board": null,
+   "label": "Lab Test Template",
+   "link_to": "Lab Test Template",
+   "report_ref_doctype": null,
+   "restrict_to_domain": null,
+   "stats_filter": "[[\"Lab Test Template\",\"lab_test_group\",\"=\",\"Laboratory\",false]]",
+   "type": "DocType",
+   "url": null
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "format": null,
+   "icon": null,
+   "kanban_board": null,
+   "label": "Patient List",
+   "link_to": "Patient",
+   "report_ref_doctype": null,
+   "restrict_to_domain": null,
+   "stats_filter": "[[\"Patient\",\"status\",\"=\",\"Active\",false]]",
+   "type": "DocType",
+   "url": null
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "format": null,
+   "icon": null,
+   "kanban_board": null,
+   "label": "Lab Test UOM",
+   "link_to": "Lab Test UOM",
+   "report_ref_doctype": null,
+   "restrict_to_domain": null,
+   "stats_filter": "[]",
+   "type": "DocType",
+   "url": null
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "format": "{} Active",
+   "icon": null,
+   "kanban_board": null,
+   "label": "Lab Test Sample",
+   "link_to": "Lab Test Sample",
+   "report_ref_doctype": null,
+   "restrict_to_domain": null,
+   "stats_filter": "[]",
+   "type": "DocType",
+   "url": null
+  },
+  {
+   "color": "Red",
+   "doc_view": "List",
+   "format": null,
+   "icon": null,
+   "kanban_board": null,
+   "label": "Vital Signs",
+   "link_to": "Vital Signs",
+   "report_ref_doctype": null,
+   "restrict_to_domain": null,
+   "stats_filter": "[]",
+   "type": "DocType",
+   "url": null
+  }
+ ],
+ "title": "Laboratory",
+ "type": "Workspace"
+}

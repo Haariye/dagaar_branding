@@ -1,0 +1,20 @@
+{
+ "app": null,
+ "bg_color": "green",
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon": "pill",
+ "icon_image": "/assets/dagaar_branding/images/desktop/pharmacy.svg",
+ "icon_type": "Link",
+ "label": "Pharmacy",
+ "link": null,
+ "link_to": "Pharmacy",
+ "link_type": "Workspace Sidebar",
+ "logo_url": null,
+ "name": "Pharmacy",
+ "parent_icon": null,
+ "restrict_removal": 0,
+ "roles": [],
+ "sidebar": null,
+ "standard": 0
+}

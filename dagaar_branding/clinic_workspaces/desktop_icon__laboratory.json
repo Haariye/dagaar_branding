@@ -1,0 +1,20 @@
+{
+ "app": null,
+ "bg_color": "purple",
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon": "flask-conical",
+ "icon_image": "/assets/dagaar_branding/images/desktop/laboratory.svg",
+ "icon_type": "Link",
+ "label": "Laboratory",
+ "link": null,
+ "link_to": "Laboratory",
+ "link_type": "Workspace Sidebar",
+ "logo_url": null,
+ "name": "Laboratory",
+ "parent_icon": null,
+ "restrict_removal": 0,
+ "roles": [],
+ "sidebar": null,
+ "standard": 0
+}
