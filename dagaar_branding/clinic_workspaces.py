@@ -51,7 +51,12 @@ def export():
 
 
 def ensure():
-	"""after_migrate: re-create any clinic workspace record that is missing."""
+	"""after_migrate: re-create any clinic workspace record that is missing.
+
+	Opt-in per site:  bench --site <site> set-config dagaar_clinic_workspaces 1
+	"""
+	if not frappe.conf.get("dagaar_clinic_workspaces"):
+		return
 	if REQUIRED_APP not in frappe.get_installed_apps():
 		return
 	for doctype in DOCTYPES:
